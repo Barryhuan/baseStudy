@@ -1,16 +1,27 @@
 <template>
   <div class="city-container full-screen">
+    <!-- 头部组件  -->
     <header-top goBack="true" :headTitle="currentCityName">
       <router-link to="/home" slot="change-city" class="change-city">切换城市</router-link>
     </header-top>
+
+    <!-- 搜索栏 -->
     <form class="city-form" @submit.prevent>
       <div class="search-city">
-        <input type="search" name="search-city" placeholder="输入学校、商务楼、地址" class="search-input input-style" required v-model="seatchCity">
+        <input
+          type="search"
+          name="search-city"
+          placeholder="输入学校、商务楼、地址"
+          class="search-input input-style"
+          required v-model="seatchCity"
+        >
       </div>
       <div class="submit-msg">
         <input type="submit" name="submit" value="提交" class="submit-input input-style" @click="postSearchValue">
       </div>
     </form>
+
+    <!-- 搜索结果 -->
     <div class="search-history" v-if="historyTitle">搜索历史</div>
     <ul class="search-result-list">
       <li class="search-result-item" v-for="(item, index) of searchCityList" :key="index" @click="nextLink(index, item.geohash)">
@@ -18,8 +29,9 @@
         <p>{{ item.address }}</p>
       </li>
     </ul>
-    <footer class="clear-allresult" v-if="historyTitle&&searchCityList.length" @click="removeAllHistory">清空搜索记录</footer>
-    <div class="search-null" v-if="searcNullResult">很抱歉！无搜索结果</div>
+    <footer class="clear-allresult" v-if="historyTitle && searchCityList.length" @click="removeAllHistory">清空搜索记录</footer>
+    <div class="search-null" v-if="searcNullResult">很抱歉！无搜索结果！</div>
+    <div class="search-null" v-if="searchNullStr">请输入搜索关键字！</div>
   </div>
 </template>
 <script>
@@ -35,7 +47,8 @@ export default {
       searchCityList: [], // ~ 搜索城市结果
       localSearchList: [], // ~ 搜索历史记录
       historyTitle: true, // ~ 切换搜索结果显示
-      searcNullResult: false // ~ 显示搜索无结果的提示
+      searcNullResult: false, // ~ 显示搜索无结果的提示
+      searchNullStr: false // ~ 搜索结果为空
     }
   },
   mounted () {
@@ -60,7 +73,7 @@ export default {
     // ~ 发送搜索请求
     postSearchValue () {
       // ~ 判断输入栏有无值，要是无或者空字串则不发送请求
-      if (this.seatchCity) {
+      if (this.seatchCity.trim()) {
         // ~ 传入城市id和搜索的值
         searchResult(this.currentCityId, this.seatchCity).then(res => {
           // ~ 将搜索历史隐藏

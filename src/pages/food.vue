@@ -1,13 +1,18 @@
 <template>
   <div class="food-container full-screen">
+    <!-- 头部组件  -->
     <header-top
       goBack="true"
       closeStatus="true"
       backStatus="true"
       :head-title="headeTitle"
     ></header-top>
+
+    <!-- 导航分类 -->
     <nav class="sort-container">
+      <!-- 食品栏 -->
       <div class="sort-item" :class="{ choose_type: sortBy === 'food' }">
+        <!-- 食品栏标题 -->
         <div class="sort-item-title" @click="chooseType('food')">
           <span class="item-info">
             {{ foodTitle }}
@@ -16,6 +21,7 @@
         </div>
         <transition name="sort-list" v-show="category">
           <div class="category-container" v-show="sortBy === 'food'">
+            <!-- 食品栏左侧 -->
             <div class="category-l">
               <ul class="category-list">
                 <li
@@ -35,6 +41,7 @@
                 </li>
               </ul>
             </div>
+            <!-- 食品栏右侧 -->
             <div class="category-r">
               <ul class="category-detail-list">
                 <li
@@ -52,7 +59,9 @@
           </div>
         </transition>
       </div>
+      <!-- 排序栏 -->
       <div class="sort-item" :class="{ choose_type: sortBy === 'sort' }">
+        <!-- 排序栏标题 -->
         <div class="sort-item-title" @click="chooseType('sort')">
           <span class="item-info">
             排序
@@ -62,6 +71,7 @@
         <transition name="sort-list">
           <div class="sort-detail-type" v-show="sortBy === 'sort'">
             <ul class="sort-detail-container" @click="resetSort($event)">
+              <!-- 智能排序 -->
               <li class="sort-detail-item">
                   <i class="iconfont icon-sort"></i>
                   <p data="0" :class="{ 'sort-detail': sortByType === 0 }">
@@ -69,6 +79,7 @@
                     <i class="iconfont icon-dagou" v-if="sortByType === 0"></i>
                   </p>
               </li>
+              <!-- 距离最近 -->
               <li class="sort-detail-item">
                   <i class="iconfont icon-location"></i>
                   <p data="5" :class="{ 'sort-detail': sortByType === 5 }">
@@ -76,6 +87,7 @@
                     <i class="iconfont icon-dagou" v-if="sortByType === 5"></i>
                   </p>
               </li>
+              <!-- 销量最高 -->
               <li class="sort-detail-item">
                   <i class="iconfont icon-hot"></i>
                   <p data="6" :class="{ 'sort-detail': sortByType === 6 }">
@@ -83,6 +95,7 @@
                     <i class="iconfont icon-dagou" v-if="sortByType === 6"></i>
                   </p>
               </li>
+              <!-- 起送价最低 -->
               <li class="sort-detail-item">
                   <i class="iconfont icon-money"></i>
                   <p data="1" :class="{ 'sort-detail': sortByType === 1 }">
@@ -90,6 +103,7 @@
                     <i class="iconfont icon-dagou" v-if="sortByType === 1"></i>
                   </p>
               </li>
+              <!-- 配送速度最快 -->
               <li class="sort-detail-item">
                   <i class="iconfont icon-time"></i>
                   <p data="2" :class="{ 'sort-detail': sortByType === 2 }">
@@ -98,6 +112,7 @@
                   </p>
                 <div class="sort-detail-r"></div>
               </li>
+              <!-- 评分最高 -->
               <li class="sort-detail-item">
                   <i class="iconfont icon-star"></i>
                   <p data="3" :class="{ 'sort-detail': sortByType === 3 }">
@@ -109,7 +124,9 @@
           </div>
         </transition>
       </div>
+      <!-- 筛选栏 -->
       <div class="sort-item" :class="{ choose_type: sortBy === 'activity' }">
+        <!-- 筛选栏标题 -->
         <div class="sort-item-title" @click="chooseType('activity')">
           <span class="item-info">
             筛选
@@ -160,6 +177,8 @@
         </transition>
       </div>
     </nav>
+
+    <!-- 商品列表组件 -->
     <main class="food-main full-screen">
       <shop-container
         :geohash="geohash"
@@ -173,6 +192,8 @@
         v-if="latitude"
       />
     </main>
+
+    <!-- 遮罩动画 -->
     <transition name="sort-mask">
       <div class="sort-mask" v-show="sortBy" @click="maskHide($event)"></div>
     </transition>
@@ -180,8 +201,8 @@
 </template>
 <script>
 import { mapState } from 'vuex'
-import { foodCategory, foodDelivery, foodActivity } from '../api/getData'
-import { handlePicturePath } from '../utils/'
+import { foodCategory, foodDelivery, foodActivity } from '../api/getData' // ~ 导入商品食物分类的三个分类接口
+import { handlePicturePath, saveCurrentState } from '../utils/' // ~ 导入图片地址处理和防止刷新导致vuex状态丢失
 const HeaderTop = () => import('@com/headertop')
 const ShopContainer = () => import('@com/common/shopcontainer')
 export default {
@@ -204,12 +225,15 @@ export default {
       confirmStatus: false // ~ 确认选择的状态
     }
   },
-  mixins: [ handlePicturePath ],
+  mixins: [ handlePicturePath ], // ~ 混入工具的图片地址处理
+  // 初始化后调用
   created () {
     this.init()
   },
   computed: {
     ...mapState(['latitude', 'longitude']),
+
+    // ~ 筛选分类导航右侧
     filtercategoryDetail () {
       let result
       result = this.categoryDetail.filter((item, index) => {
@@ -230,22 +254,32 @@ export default {
   },
   methods: {
     async init () {
+      saveCurrentState(this.$store)
+      // ~ 获取从shoplist页面存在路由上的参数
       this.geohash = this.$route.query.geohash
       this.headeTitle = this.$route.query.title
       this.restaurant_category_id = parseInt(this.$route.query.restaurant_category_id)
       this.foodTitle = this.headeTitle
+
+      // ~ 获取商品分类
       this.category = await foodCategory(this.latitude, this.longitude)
       this.category.forEach(item => {
         if (this.restaurant_category_id === item.id) {
           this.categoryDetail = item.sub_categories
         }
       })
+
+      // ~ 获取商家送货数据接口
       this.Delivery = await foodDelivery(this.latitude, this.longitude)
+
+      // ~ 获取商家活动数据接口
       this.Activity = await foodActivity(this.latitude, this.longitude)
       this.Activity.forEach((item, index) => {
         this.support_ids[index] = { status: false, id: item.id }
       })
     },
+
+    // ~ 切换三栏
     chooseType (type) {
       if (this.sortBy !== type) {
         document.body.classList.add('no-scroll')
@@ -262,21 +296,29 @@ export default {
         }
       }
     },
+
+    // ~ 食品栏左侧处理
     changeSortItem (id, index) {
       this.restaurant_category_id = id
       this.categoryDetail = this.category[index].sub_categories
     },
+
+    // ~ 食品栏右侧处理
     resetContent (id, name) {
       this.restaurant_category_ids = id
       this.sortBy = ''
       this.foodTitle = this.headeTitle = name
     },
+
+    // ~ 排序栏处理
     resetSort (event) {
       let el
       el = event.target.nodeName.toUpperCase() !== 'P' ? event.target.parentNode : event.target
       this.sortByType = parseInt(el.getAttribute('data'))
       this.sortBy = ''
     },
+
+    // ~ 筛选栏选择配送方式
     selectDeliveryMode (id) {
       if (this.delivery_mode === null) {
         this.filterNum++
@@ -288,6 +330,8 @@ export default {
         this.delivery_mode = id
       }
     },
+
+    // ~ 筛选栏多选商家属性
     selectSupportIds (index, id) {
       this.support_ids.splice(index, 1, {
         status: !this.support_ids[index].status,
@@ -300,22 +344,31 @@ export default {
         }
       })
     },
+
+    // ~ 筛选栏清空选择
     clearSelect () {
       this.support_ids.map(item => (item.status = false))
       this.filterNum = 0
       this.delivery_mode = null
     },
+
+    // ~ 筛选栏点击完后确认
     confirmSelectFun () {
       this.confirmStatus = !this.confirmStatus
       this.sortBy = ''
     },
+
+    // ~ 隐藏遮罩
     maskHide (event) {
       if (event.target.getAttribute('class').includes('sort-mask')) {
         this.sortBy = ''
       }
     }
   },
-  components: { HeaderTop, ShopContainer }
+  components: {
+    HeaderTop,
+    ShopContainer
+  }
 }
 </script>
 <style lang="less" scope>

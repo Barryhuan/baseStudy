@@ -1,5 +1,6 @@
 <template>
   <div class="shop-list full-screen">
+    <!-- 头部组件 -->
     <header-top signin-up="shoplist">
         <router-link :to="{ path: `/search/${geohash}` }" slot="search" class="search-icon">
           <i class="iconfont icon-search"></i>
@@ -8,6 +9,8 @@
           <span>{{ shopListTitle }}</span>
         </router-link>
     </header-top>
+
+    <!-- 分类轮播图 -->
     <nav class="shoplist-nav">
       <div class="swiper-container" v-if="foodTypeList.length">
         <div class="swiper-wrapper">
@@ -35,11 +38,14 @@
         <div class="swiper-pagination"></div>
       </div>
     </nav>
+
+    <!-- 商铺列表 -->
     <div class="shoplist-container">
       <p class="shoplist-business">
         <i class="iconfont icon-shangjia"></i>
         附近商家
       </p>
+      <!-- 商铺列表组件 -->
       <shop-container v-if="isShowList" :geohash="geohash"/>
     </div>
     <footer-bottom />

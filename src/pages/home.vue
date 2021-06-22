@@ -1,33 +1,45 @@
 <template>
   <div class="home full-screen">
+    <!-- 头部组件  -->
     <header-top signin-up="home" class="home-head">
       <span slot="logo" class="logo" @click="logoReload">Barry</span>
     </header-top>
+
+    <!-- 当前定位  -->
     <nav class="city-nav">
       <div class="location-city">
         <span class="location-l">当前定位城市：</span>
         <span class="location-r">定位不准时，请在城市列表中选择</span>
       </div>
       <router-link :to="'/city/' + currentCityId" class="current-city">
-        <span>{{currentCity}}</span>
+        <span>{{ currentCity }}</span>
         <i class="iconfont icon-arrow-r"></i>
       </router-link>
     </nav>
+
+    <!-- 热门城市  -->
     <div class="hotcity-container">
       <p class="hotcity-title">热门城市</p>
       <div class="hotcity-list">
-        <router-link :to="'/city/' + item.id" class="hotcity-item" v-for="item in hotCity" :key="item.id">{{item.name}}</router-link>
+        <router-link
+          :to="'/city/' + item.id"
+          class="hotcity-item"
+          v-for="item in hotCity"
+          :key="item.id">{{ item.name }}
+        </router-link>
       </div>
     </div>
+
+    <!-- 所有城市  -->
     <div class="city-container">
       <div class="city-content" v-for="(allItem, ket, allIndex) in sortCity" :key="allIndex">
-        <p class="city-title">{{ket}}</p>
+        <p class="city-title">{{ ket }}</p>
         <div class="city-list">
           <router-link
             :to="'/city/' + cityItem.id"
             class="city-item"
             v-for="cityItem of allItem"
-            :key="cityItem.id">{{cityItem.name}}</router-link>
+            :key="cityItem.id">{{ cityItem.name }}</router-link>
         </div>
       </div>
     </div>
@@ -57,10 +69,12 @@ export default {
       this.currentCity = res.name
       this.currentCityId = res.id
     })
+
     // ~ 调用热门城市接口获取数据
     hotCity().then(res => {
       this.hotCity = res
     })
+
     // ~ 调用所有城市接口获取数据
     cityGroup().then(res => {
       this.allCityList = res
@@ -71,6 +85,7 @@ export default {
     sortCity () {
       // ~ 存储排序好的对象（接口返回的也是个对象）
       let sortList = {}
+
       // ~ 根据A-Z的Unicode编码转化，分别是65-90，对应A-Z
       for (let i = 65; i <= 90; i++) {
         // ~ 使用String.fromCharCode将Unicode编码转换成对应的字母，并将排序好的对象存储进sortList对象中

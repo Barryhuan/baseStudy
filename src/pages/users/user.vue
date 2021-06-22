@@ -1,6 +1,9 @@
 <template>
   <div class="user-container full-screen">
+    <!-- 头部组件 -->
     <header-top head-title="我的" onlyStatus="true"></header-top>
+
+    <!-- 用户 -->
     <nav class="user-nav">
       <router-link
         to="/login"
@@ -19,44 +22,59 @@
         </dd>
       </router-link>
     </nav>
+
+    <!-- 内容 -->
     <main class="user-main">
+      <!-- 用户信息 -->
       <div class="user-main-t">
+        <!-- 我的余额 -->
         <router-link to="/" tag="dl">
           <dt><span>0.00</span>元</dt>
           <dd>我的余额</dd>
         </router-link>
+        <!-- 我的优惠 -->
         <router-link to="/" tag="dl">
           <dt><span>3</span>个</dt>
           <dd>我的优惠</dd>
         </router-link>
+        <!-- 我的积分 -->
         <router-link to="/" tag="dl">
           <dt><span>0</span>分</dt>
           <dd>我的积分</dd>
         </router-link>
       </div>
+
+      <!-- 跳转列表 -->
       <div class="user-main-b">
+        <!-- 我的订单 -->
         <router-link to="/order" tag="dl" class="into-page">
           <dt><i class="iconfont icon-user-order"></i>我的订单</dt>
           <dd><i class="iconfont icon-arrow-r"></i></dd>
         </router-link>
+        <!-- 积分商城 -->
         <router-link to="/" tag="dl" class="into-page">
           <dt><i class="iconfont icon-points-mall"></i>积分商城</dt>
           <dd><i class="iconfont icon-arrow-r"></i></dd>
         </router-link>
+        <!-- 饿了么会员卡 -->
         <router-link to="/" tag="dl" class="into-page">
           <dt><i class="iconfont icon-vip"></i>饿了么会员卡</dt>
           <dd><i class="iconfont icon-arrow-r"></i></dd>
         </router-link>
+        <!-- 服务中心 -->
         <router-link to="/" tag="dl" class="into-page">
           <dt><i class="iconfont icon-serverce-centre"></i>服务中心</dt>
           <dd><i class="iconfont icon-arrow-r"></i></dd>
         </router-link>
+        <!-- 下载饿了么App -->
         <router-link to="/" tag="dl" class="into-page">
           <dt><i class="iconfont icon-elm"></i>下载饿了么App</dt>
           <dd><i class="iconfont icon-arrow-r"></i></dd>
         </router-link>
       </div>
     </main>
+
+    <!-- 底部导航组件 -->
     <footer-bottom />
   </div>
 </template>

@@ -1,17 +1,25 @@
 <template>
+  <!-- 底部组件 -->
   <footer class="footer-botton">
+    <!-- 外卖 -->
     <router-link :to="{ path: '/shoplist', query: { geohash: geohash } }" class="link-item link-index">
       <i class="iconfont icon-elem-logo"></i>
       <p>外卖</p>
     </router-link>
+
+    <!-- 搜索 -->
     <router-link :to="{ path: `/search/${ geohash }`}" class="link-item link-search">
       <i class="iconfont icon-search"></i>
       <p>搜索</p>
     </router-link>
+
+    <!-- 订单 -->
     <router-link to="/order" class="link-item link-order">
       <i class="iconfont icon-order"></i>
       <p>订单</p>
     </router-link>
+
+    <!-- 我的 -->
     <router-link to="/user" class="link-item link-user">
       <i class="iconfont icon-user"></i>
       <p>我的</p>

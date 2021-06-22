@@ -6,13 +6,19 @@
       <i class="iconfont icon-arrow-l" @click="$router.go(-1);closeOver()"></i>
     </div>
     <slot name="shoplist-title"></slot>
+
+    <!-- 登录注册 -->
     <router-link :to="userInfo ? '/user' : '/login'" v-if="signinUp">
       <span class="login-link" v-if="signinUp === 'home'" >登录 | 注册</span>
       <span class="login-link" v-else>登录</span>
     </router-link>
+
+    <!-- 头部标题 -->
     <div class="head-title" v-if="headTitle">
       <span>{{ headTitle }}</span>
     </div>
+
+    <!-- 切换城市 -->
     <slot name="change-city"></slot>
   </header>
 </template>

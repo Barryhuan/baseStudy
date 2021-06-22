@@ -1,6 +1,9 @@
 <template>
   <div class="search-container full-screen">
+    <!-- 头部组件 -->
     <header-top head-title="搜索" onlyStatus="true"></header-top>
+
+    <!-- 搜索 -->
     <form class="search-form">
       <input
         type="search"
@@ -18,7 +21,10 @@
         @click.prevent="searchShop('')"
       />
     </form>
+
+    <!-- 搜索展示 -->
     <main class="search-main">
+      <!-- 搜索结果 -->
       <div class="search-content" v-if="searchResult.length">
         <h3>商家</h3>
         <div class="search-shop-list">
@@ -29,9 +35,11 @@
             v-for="(item, index) of searchResult"
             :key="index"
           >
+            <!-- 商家列表左侧 -->
             <dt class="item-msg-img">
               <img :src="imgBaseUrl + item.image_path" alt="">
             </dt>
+            <!-- 商家列表右侧 -->
             <dd class="item-msg-info">
               <h5>
                 <p class="shop-item-content-l">
@@ -59,6 +67,8 @@
           </router-link>
         </div>
       </div>
+
+      <!-- 搜索历史 -->
       <div class="search-listory" v-if="searchHistory.length && listoryStatus">
         <h3>搜索历史</h3>
         <ul class="search-listory-list">
@@ -69,11 +79,15 @@
         </ul>
         <p class="clear-listory" @click="deleteAllListory">清空搜索历史记录</p>
       </div>
+
+      <!-- 无搜索结果 -->
       <div class="search-reject" v-if="searchResultEmpty">
         <img src="../assets/images/not-data.png" alt="">
         <p>很抱歉！无搜索结果</p>
       </div>
     </main>
+
+    <!-- 底部导航栏 -->
     <footer-bottom />
   </div>
 </template>
@@ -101,6 +115,7 @@ export default {
     }
   },
   methods: {
+    // ~ 搜索商铺
     async searchShop (value) {
       if (value) {
         this.searchContent = value
@@ -109,6 +124,8 @@ export default {
       }
       this.searchContent = this.searchContent.trim()
       this.listoryStatus = false
+
+      // ~ 请求搜索结果
       this.searchResult = await searchList(this.geohash, this.searchContent)
       this.searchResultEmpty = !this.searchResult.length
       let history = getSearchHistory('searchHistory')
@@ -128,6 +145,7 @@ export default {
       }
       setSearchHistory('searchHistory', this.searchHistory)
     },
+
     // ~ 当搜索框为空时清空搜索内容的数据
     checkInput () {
       if (this.searchContent === '') {
@@ -136,11 +154,13 @@ export default {
         this.searchResult = []
       }
     },
+
     // ~ 清除当前项的数据
     deleteCurrentListory (index) {
       this.searchHistory.splice(index, 1)
       setSearchHistory('searchHistory', this.searchHistory)
     },
+
     // ~ 清除所有历史数据
     deleteAllListory () {
       this.searchHistory = []
