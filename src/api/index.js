@@ -1,6 +1,6 @@
 import ajax from './ajax'
 /*
-?  首页接口
+!  首页接口
 */
 
 // ~ 获取当前城市接口
@@ -19,7 +19,7 @@ export const cityGroup = () => ajax('/v1/cities', {
 })
 
 /*
-?  搜索页接口
+!  搜索页接口
 */
 
 // ~ 进入到搜索页面去请求城市名接口
@@ -32,21 +32,22 @@ export const searchResult = (cityId, content) => ajax('/v1/pois', {
   keyword: content
 })
 
+
 /*
-?  商品首页页接口
+!  商品首页页接口
 */
 
-//~ 商品列表页面的根据经纬度请求
+//~ 商品列表页面的根据经纬度接口
 export const shopListAddress = geohash => ajax('/v2/pois/' + geohash)
 
-//~ 商品列表页面的食物列表请求
+//~ 商品列表页面的食物列表接口
 export const shopListApi = geohash => ajax('/v2/index_entry', {
   geohash,
   group_type: '1',
 	'flags[]': 'F'
 })
 
-//~ 商品列表商铺列表请求
+//~ 商品列表商铺列表接口
 export const shopItemApi = (
   latitude,
   longitude,
@@ -77,8 +78,9 @@ export const shopItemApi = (
   })
 }
 
+
 /*
-?  商品食物分类接口
+!  商品食物分类接口
 */
 
 //~ 获取商品分类
@@ -90,8 +92,9 @@ export const foodDelivery = (latitude, longitude) => ajax('/shopping/v1/restaura
 //~ 获取商家活动数据接口
 export const foodActivity = (latitude, longitude) => ajax('/shopping/v1/restaurants/activity_attributes', { latitude, longitude })
 
+
 /*
-?  搜索页面记录
+!  搜索页面记录
 */
 
 //~ 获取搜索商铺数据接口
@@ -101,3 +104,30 @@ export const searchList= (geohash, keyword) => ajax('/v4/restaurants', {
   keyword,
   type: 'search'
 })
+
+/*
+!  商铺商品详情
+*/
+
+//~ 商品详情接口
+export const shopDetails = (shopid, latitude, longitude) => ajax('/shopping/restaurant/' + shopid, {
+  latitude,
+  longitude: longitude + '&extras[]=activities&extras[]=album&extras[]=license&extras[]=identification&extras[]=statistics'
+})
+
+//~ 商品菜单列表接口
+export const shopMenu = restaurant_id => ajax('/shopping/v2/menu', { restaurant_id })
+
+//~ 商品评价列表接口
+export const getRatingList = (shopid, offset, tag_name = '') => ajax('/ugc/v2/restaurants/' + shopid + '/ratings', {
+  has_content: true,
+	offset,
+	limit: 10,
+	tag_name
+})
+
+//~ 商铺评价分数接口
+export const ratingScores = shopid => ajax('/ugc/v2/restaurants/' + shopid + '/ratings/scores')
+
+//~ 商铺评价分类接口
+export const ratingTags = shopid => ajax('/ugc/v2/restaurants/' + shopid + '/ratings/tags')

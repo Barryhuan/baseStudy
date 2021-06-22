@@ -201,8 +201,8 @@
 </template>
 <script>
 import { mapState } from 'vuex'
-import { foodCategory, foodDelivery, foodActivity } from '../api/getData' // ~ 导入商品食物分类的三个分类接口
-import { handlePicturePath, saveCurrentState } from '../utils/' // ~ 导入图片地址处理和防止刷新导致vuex状态丢失
+import { foodCategory, foodDelivery, foodActivity } from '@/api/' // ~ 导入商品食物分类的三个分类接口
+import { handlePicturePath, saveCurrentState } from '@/utils/' // ~ 导入图片地址处理和防止刷新导致vuex状态丢失
 const HeaderTop = () => import('@com/headertop')
 const ShopContainer = () => import('@com/common/shopcontainer')
 export default {

@@ -36,8 +36,8 @@
 </template>
 <script>
 import HeaderTop from '@com/headertop'
-import { searchCityName, searchResult } from '../api/getData'
-import { setSearchHistory, getSearchHistory, removeSearchHistory } from '../utils/'
+import { searchCityName, searchResult } from '@/api/'
+import { setSearchHistory, getSearchHistory, removeSearchHistory } from '@/utils/'
 export default {
   data () {
     return {

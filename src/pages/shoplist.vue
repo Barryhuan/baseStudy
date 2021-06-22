@@ -54,7 +54,7 @@
 <script>
 import Swiper from 'swiper'
 import '../assets/css/plugins/swiper.min.css'
-import { currentCity, shopListAddress, shopListApi } from '../api/getData'
+import { currentCity, shopListAddress, shopListApi } from '@/api/'
 import { mapMutations } from 'vuex'
 const HeaderTop = () => import('@com/headertop')
 const FooterBottom = () => import('@com/footerbottom')

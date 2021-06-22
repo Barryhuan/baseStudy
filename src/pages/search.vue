@@ -92,8 +92,8 @@
   </div>
 </template>
 <script>
-import { searchList } from '../api/getData'
-import { setSearchHistory, getSearchHistory } from '../utils/'
+import { searchList } from '@/api/'
+import { setSearchHistory, getSearchHistory } from '@/utils/'
 const HeaderTop = () => import('@com/headertop')
 const FooterBottom = () => import('@com/footerbottom')
 export default {
@@ -299,6 +299,7 @@ export default {
           .bd(b, 1px solid #e4e4e4);
           .listory-item-info {
             .w(90%);
+            .ellipsis()
           }
         }
       }

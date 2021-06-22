@@ -22,6 +22,10 @@ export default new Router({
       component: () => import('@p/city')
     },
     {
+      path: '/shop',
+      component: () => import('@p/shop/shop')
+    },
+    {
       path: '/shoplist',
       component: () => import('@p/shoplist'),
       meta: { keepAlive: true }

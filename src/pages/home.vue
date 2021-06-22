@@ -47,7 +47,7 @@
 </template>
 <script>
 import HeaderTop from '@com/headertop'
-import { currentCity, hotCity, cityGroup } from '../api/getData'
+import { currentCity, hotCity, cityGroup } from '@/api/'
 export default {
   data () {
     return {

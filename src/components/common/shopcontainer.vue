@@ -58,7 +58,7 @@
 </template>
 <script>
 import { mapState } from 'vuex'
-import { shopItemApi } from '../../api/getData'
+import { shopItemApi } from '@/api/'
 import { saveCurrentState } from '../../utils/'
 export default {
   props: [
