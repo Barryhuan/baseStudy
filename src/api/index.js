@@ -110,16 +110,16 @@ export const searchList= (geohash, keyword) => ajax('/v4/restaurants', {
 */
 
 //~ 商品详情接口
-export const shopDetails = (shopid, latitude, longitude) => ajax('/shopping/restaurant/' + shopid, {
+export const shopDetailsApi = (shopid, latitude, longitude) => ajax('/shopping/restaurant/' + shopid, {
   latitude,
   longitude: longitude + '&extras[]=activities&extras[]=album&extras[]=license&extras[]=identification&extras[]=statistics'
 })
 
 //~ 商品菜单列表接口
-export const shopMenu = restaurant_id => ajax('/shopping/v2/menu', { restaurant_id })
+export const shopMenuListApi = restaurant_id => ajax('/shopping/v2/menu', { restaurant_id })
 
 //~ 商品评价列表接口
-export const getRatingList = (shopid, offset, tag_name = '') => ajax('/ugc/v2/restaurants/' + shopid + '/ratings', {
+export const ratingListApi = (shopid, offset, tag_name = '') => ajax('/ugc/v2/restaurants/' + shopid + '/ratings', {
   has_content: true,
 	offset,
 	limit: 10,
@@ -127,7 +127,7 @@ export const getRatingList = (shopid, offset, tag_name = '') => ajax('/ugc/v2/re
 })
 
 //~ 商铺评价分数接口
-export const ratingScores = shopid => ajax('/ugc/v2/restaurants/' + shopid + '/ratings/scores')
+export const ratingScoresDataApi = shopid => ajax('/ugc/v2/restaurants/' + shopid + '/ratings/scores')
 
 //~ 商铺评价分类接口
-export const ratingTags = shopid => ajax('/ugc/v2/restaurants/' + shopid + '/ratings/tags')
+export const ratingTagsApi = shopid => ajax('/ugc/v2/restaurants/' + shopid + '/ratings/tags')

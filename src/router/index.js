@@ -22,8 +22,14 @@ export default new Router({
       component: () => import('@p/city')
     },
     {
-      path: '/shop',
-      component: () => import('@p/shop/shop')
+      path: '/shops',
+      component: () => import('@p/shops/shops'),
+      children: [
+        {
+          path: 'shopsdetail',
+          component: () => import('@p/shops/children/shopsdetail')
+        }
+      ]
     },
     {
       path: '/shoplist',

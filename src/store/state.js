@@ -2,5 +2,6 @@ export default {
   userInfo: null,
   geohash: '',
   latitude: '',
-  longitude: ''
+  longitude: '',
+  carlist: {}
 }

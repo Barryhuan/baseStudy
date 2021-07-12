@@ -2,7 +2,7 @@
   <div class="shop-container full-screen" ref="change-bg">
     <ul class="shop-items" v-if="shopItemArr.length">
       <router-link
-        :to="{ path: '/shop', query: { geohash, id: item.id }}"
+        :to="{ path: '/shops', query: { geohash, id: item.id }}"
         v-for="(item, index) of shopItemArr"
         :key="index"
         tag="li"
@@ -256,6 +256,7 @@ export default {
             white-space: nowrap;
             -webkit-transform: scale(.85);
             -webkit-transform-origin-y: 50%;
+            -webkit-transform-origin-x: 100%;
             transform: scale(.85);
           }
         }

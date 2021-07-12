@@ -3,4 +3,5 @@
 /dist/
 /*.js
 /src/plugins/
-/src/api/getData.js
+/src/api/index.js
+/src/router/*.js

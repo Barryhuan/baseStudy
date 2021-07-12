@@ -254,7 +254,9 @@ export default {
   },
   methods: {
     async init () {
-      saveCurrentState(this.$store)
+      if (!this.latitude) {
+        saveCurrentState(this.$store)
+      }
       // ~ 获取从shoplist页面存在路由上的参数
       this.geohash = this.$route.query.geohash
       this.headeTitle = this.$route.query.title
