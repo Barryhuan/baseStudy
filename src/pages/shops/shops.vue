@@ -97,7 +97,8 @@
                   <div class="menu-right-list" v-for="( foodItem, foodIndex ) in item.foods" :key="foodIndex">
                      <router-link class="food-item-link" to="">
                       <div class="menu-food-img">
-                        <img :src="imgBaseUrl + foodItem.image_path" alt="">
+                        <!-- <img :src="imgBaseUrl + foodItem.image_path" alt=""> -->
+                        <img v-lazy="imgBaseUrl + foodItem.image_path" :key="imgBaseUrl + foodItem.image_path" alt="">
                       </div>
                       <div class="menu-food-info">
                         <div class="food-info-top">
@@ -244,7 +245,6 @@ export default {
       // 右侧列表滚动时左侧列表选项激活和滚动
       this.shopScroll.on('scroll', (element) => {
         if (!foodMenuLeft) return
-        console.log('我在')
         this.shopTopHeightList.forEach((item, index) => {
           if (this.shopMenuIndexChange && Math.abs(Math.round(element.y)) >= item) {
             this.shopMenuIndex = index
@@ -259,9 +259,7 @@ export default {
       this.shopMenuIndex = index
       this.shopMenuIndexChange = false
       this.shopScroll.scrollTo(0, -this.shopTopHeightList[index], 400)
-      console.log('我被点击了')
       this.shopScroll.on('scrollEnd', () => {
-        console.log('我滚动到底部了')
         this.shopMenuIndexChange = true
       })
     }
@@ -384,7 +382,9 @@ export default {
         touch-action: pan-y;
         .menu-left {
           .ps(rt);
-          .pd(14px 12px);
+          .pd(20px 12px);
+          .ft-s(13px);
+          .ft-w(600);
           .ellipsis();
           &.menu-left-active {
             .bg-c(#fff);

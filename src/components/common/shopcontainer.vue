@@ -8,7 +8,7 @@
         tag="li"
         class="shop-item">
         <div class="shop-item-img">
-          <img :src="imgBaseUrl + item.image_path" alt="">
+          <img v-lazy="imgBaseUrl + item.image_path" :key="imgBaseUrl + item.image_path" alt="">
         </div>
         <div class="shop-item-msg">
           <div class="item-msg-t">
