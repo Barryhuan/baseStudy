@@ -29,7 +29,7 @@
         <h3>商家</h3>
         <div class="search-shop-list">
           <router-link
-            to="/shop"
+             :to="{ path: '/shops', query: { geohash, id: item.id }}"
             tag="dl"
             class="search-shop-item"
             v-for="(item, index) of searchResult"

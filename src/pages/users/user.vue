@@ -211,6 +211,9 @@ export default {
             .bg-c(#e4e4e4);
           }
         }
+        .into-page:nth-last-child(1)::before {
+          .h(0);
+        }
         & .into-page:nth-of-type(1) dt .iconfont {
           .c(#d81e06);
         }
