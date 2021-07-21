@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- 商铺内容 -->
     <div class="shops-container full-screen" v-if="!shopLoading">
       <!-- 头部组件 -->
       <header-top
@@ -32,7 +33,7 @@
               </div>
             </div>
           </router-link>
-        <!-- 商铺活动 -->
+          <!-- 商铺活动 -->
           <div
             class="shops-active"
             v-if="shopDetails.activities && shopDetails.activities.length"
@@ -77,7 +78,7 @@
                   v-for="(item, index) in shopMenuList"
                   :key="index"
                   class="menu-left"
-                  :class="{ 'menu-left-active': index === shopMenuIndex}"
+                  :class="{ 'menu-left-active': index === shopMenuIndex }"
                   @click="chooseMenu(index)">
                   <span>{{ item.name }}</span>
                 </li>
@@ -134,6 +135,19 @@
                         </span>
                       </div>
                     </router-link>
+                    <div class="buycar-content">
+                      <div class="buycar-price">
+                        <span>￥</span>
+                        <span>{{ foodItem.specfoods[0].price }}</span>
+                        <span v-if="foodItem.specifications.length">起</span>
+                      </div>
+                      <buy-car
+                        :shopId="shopId"
+                        :foodItem="foodItem"
+                        @showChooseList="showChooseList"
+                        @showReduceTip="showReduceTip"
+                      ></buy-car>
+                    </div>
                   </div>
                 </li>
               </ul>
@@ -153,8 +167,52 @@
     <div class="animation-opacity show-animation-picture" v-if="shopLoading">
       <img src="@i/shop_back_svg.svg" alt="">
     </div>
+    <!-- 规格框内容 -->
+    <div class="specs-show">
+      <transition name="fade">
+        <div class="specs-cover" v-if="showSpecs" @click="showChooseList"></div>
+      </transition>
+      <transition name="fadeBounce">
+        <div class="specs-content" v-if="showSpecs">
+          <div class="specs-header">
+            <h4>{{ choosedFoods.name }}</h4>
+            <i class="iconfont icon-delete"></i>
+          </div>
+          <div class="specs-details">
+            <h5 class="specs-details-title">{{ choosedFoods.specifications[0].name }}</h5>
+            <ul>
+              <li
+                v-for="(item, index) in choosedFoods.specifications[0].values"
+                :key="index"
+                :class="{ 'specs-active': index === specsIndex }"
+                @click="chooseSpecs(itemIndex)"
+              >{{ item }}</li>
+            </ul>
+          </div>
+          <div class="specs-footer">
+            <div class="specs-footer-price">
+              <span>￥</span>
+              <span>{{ choosedFoods.specfoods[specsIndex].price }}</span>
+            </div>
+            <div
+              v-if="choosedFoods && choosedFoods.specfoods.length"
+              class="specs-footer-addcart"
+              @click="addSpecs(
+                choosedFoods.category_id,
+                choosedFoods.item_id,
+                choosedFoods.specfoods[specsIndex].food_id,
+                choosedFoods.specfoods[specsIndex].name,
+                choosedFoods.specfoods[specsIndex].price,
+                choosedFoods.specifications[0].values[specsIndex],
+                choosedFoods.specfoods[specsIndex].packing_fee,
+                choosedFoods.specfoods[specsIndex].sku_id,
+                choosedFoods.specfoods[specsIndex].stock
+              )">加入购物车</div>
+          </div>
+        </div>
+      </transition>
+    </div>
   </div>
-
 </template>
 <script>
 import {
@@ -164,10 +222,11 @@ import {
   ratingScoresDataApi, // ~ 商铺评价分数
   ratingTagsApi // ~ 商铺评价分类
 } from '@/api/'
-import { mapState } from 'vuex'
+import { mapState, mapMutations } from 'vuex'
 import { saveCurrentState } from '@/utils/'
 import BScroll from 'better-scroll'
 const HeaderTop = () => import('@com/headertop')
+const BuyCar = () => import('@com/common/buycar.vue')
 export default {
   data () {
     return {
@@ -182,6 +241,10 @@ export default {
       shopScroll: null, // ~ 右侧列表的scroll
       showActivi: false, // ~ 是否显示商铺活动
       shopLoading: true, // ~ 显示加载动画
+      showSpecs: false, // ~ 控制显示食品规格
+      showDeleteTip: false, // ~ 多规格商品点击减按钮，弹出提示框
+      specsIndex: 0, // ~ 当前选中的规格索引值
+      choosedFoods: null, // ~ 当前选中食品数据
       ratingOffset: 0, // ~ 评价获取数据的offset值
       ratingList: [], // ~ 商品评价列表
       ratingScoresData: {}, // ~ 商铺评价分数
@@ -194,12 +257,20 @@ export default {
   created () {
     this.geohash = this.$route.query.geohash
     this.shopId = this.$route.query.id
+    this.INIT_BUYCART()
   },
   mounted () {
     this.init()
     this.windowHeight = window.innerHeight
   },
   methods: {
+    ...mapMutations([
+      'ADD_CAR',
+      'REDUCE_CAR',
+      'INIT_BUYCART',
+      'CLEAR_CART',
+      'RECORD_SHOPDETAIL'
+    ]),
     // ~ 初始化请求
     async init () {
       if (!this.latitude) {
@@ -216,6 +287,7 @@ export default {
       this.ratingTags = await ratingTagsApi(this.shopId)
       this.hideLoading()
     },
+    // ~ 控制加载动画后初始化完成显示内容
     hideLoading () {
       this.shopLoading = false
     },
@@ -262,10 +334,34 @@ export default {
       this.shopScroll.on('scrollEnd', () => {
         this.shopMenuIndexChange = true
       })
+    },
+    // ~ 显示规格列表
+    showChooseList (foods) {
+      if (foods) this.choosedFoods = foods
+      this.showSpecs = !this.showSpecs
+      this.specsIndex = 0
+    },
+    // ~ 规格显示无法减去商品提示
+    showReduceTip () {
+      this.showDeleteTip = true
+      clearTimeout(this.timer)
+      this.timer = setTimeout(() => {
+        clearTimeout(this.timer)
+        this.showDeleteTip = false
+      }, 3000)
+    },
+    // ~ 选择规格
+    chooseSpecs (index) {
+      this.specsIndex = index
+    },
+    // ~ 将规格商品添加到购物车中
+    addSpecs (categoryId, itemId, foodId, name, price, specs, packingFee, skuId, stock) {
+      this.ADD_CAR({ shopId: this.shopId, categoryId, itemId, foodId, name, price, specs, packingFee, skuId, stock })
+      this.showChooseList()
     }
   },
   watch: {
-    // ~ Dom元素渲染完后执行
+    // ~ Dom元素渲染完后执行获取滚动元素高度
     shopLoading (value) {
       if (!value) {
         this.$nextTick(() => {
@@ -275,9 +371,15 @@ export default {
     }
   },
   computed: {
-    ...mapState(['latitude', 'longitude', 'carlist'])
+    ...mapState(['latitude', 'longitude', 'cartList']),
+    shopCart () {
+      return { ...this.cartList[this.shopId] }
+    }
   },
-  components: { HeaderTop }
+  components: {
+    HeaderTop,
+    BuyCar
+  }
 }
 </script>
 <style lang="less" scope>
@@ -386,6 +488,14 @@ export default {
           .ft-s(13px);
           .ft-w(600);
           .ellipsis();
+          &::after {
+            content: '';
+            .ps(ab);
+            bottom: 0;
+            left: 0;
+            .wh(100%, 1px);
+            .bg-c(#ebebeb);
+          }
           &.menu-left-active {
             .bg-c(#fff);
             &::before {
@@ -408,10 +518,11 @@ export default {
             .dp(f);
             .j-c(sb);
             .a-i(c);
-            .pd(10px 8px 10px 12px);
+            .pd(14px 8px 14px 12px);
             .bg-c(#f2f2f2);
             .c(#686868);
             h4 > span {
+              .mg(l, 5px);
               .ft-s(12px);
               .ft-w(400);
               .c(#a2a2a2);
@@ -438,7 +549,7 @@ export default {
                 }
               }
               .menu-food-info {
-                .w(63%);
+                .w(59%);
                 .mg(l, 20px);
                 .info-title {
                   .dp(f);
@@ -478,11 +589,50 @@ export default {
                 }
               }
             }
+
           }
           & .menu-right-list:nth-last-of-type(1) {
             .bd(r, 1px solid transparent);
           }
         }
+      }
+    }
+  }
+}
+
+.specs-show {
+  .specs-cover {
+    .ps(fx);
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    .bg-c(rgba(0, 0, 0, .4));
+    .z(9999999);
+  }
+  .specs-content {
+    .ps(fx);
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    .mg(auto);
+    .wh(70%, 30%);
+    .bg-c(#fff);
+    .bdr(9px);
+    .z(999999999);
+    .specs-header {
+      .dp(f);
+      .j-c(fe);
+      .pd(10px 12px);
+      h4 {
+        .w(33.33%);
+      }
+      .iconfont {
+        .dp(f);
+        .j-c(fe);
+        .a-i(c);
+        .w(33.33%);
       }
     }
   }
