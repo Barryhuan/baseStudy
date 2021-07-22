@@ -79,7 +79,8 @@
                   :key="index"
                   class="menu-left"
                   :class="{ 'menu-left-active': index === shopMenuIndex }"
-                  @click="chooseMenu(index)">
+                  @click="chooseMenu(index)"
+                >
                   <span>{{ item.name }}</span>
                 </li>
               </ul>
@@ -98,7 +99,6 @@
                   <div class="menu-right-list" v-for="( foodItem, foodIndex ) in item.foods" :key="foodIndex">
                      <router-link class="food-item-link" to="">
                       <div class="menu-food-img">
-                        <!-- <img :src="imgBaseUrl + foodItem.image_path" alt=""> -->
                         <img v-lazy="imgBaseUrl + foodItem.image_path" :key="imgBaseUrl + foodItem.image_path" alt="">
                       </div>
                       <div class="menu-food-info">
@@ -163,10 +163,38 @@
         </div>
       </transition>
     </div>
+
     <!-- 加载动画 -->
     <div class="animation-opacity show-animation-picture" v-if="shopLoading">
       <img src="@i/shop_back_svg.svg" alt="">
     </div>
+
+    <!-- 购车车 -->
+    <div class="buycart-content">
+      <div class="buycart-count" @click="toggleCartShow">
+        <div
+          class="buycart-car"
+          :class="{
+            'buycart-icon-active' : totalPrice,
+            'move-icon': receiveInCart
+          }"
+          ref="buycartIcon">
+          <span class="buycar-length" v-if="totalNum">{{ totalNum }}</span>
+          <i class="iconfont icon-buycart"></i>
+        </div>
+        <div class="buycart-info">
+          <p class="buycart-price">￥ {{ totalPrice }}</p>
+          <p class="buycart-delivery">配送费￥{{ deliveryFee }}</p>
+        </div>
+      </div>
+      <div class="buycart-settlment" :class="{ 'goToPlay' : minimumOrderAmount <= 0 }">
+        <span class="not-price-play" v-if="minimumOrderAmount > 0 ">还差￥{{ minimumOrderAmount }}起送</span>
+        <router-link :to="{ path: '/confirmOrder', query: { geohash, shopId } }" v-else>去结算</router-link>
+      </div>
+    </div>
+
+    <!-- 购车车内容 -->
+
     <!-- 规格框内容 -->
     <div class="specs-show">
       <transition name="fade">
@@ -176,7 +204,7 @@
         <div class="specs-content" v-if="showSpecs">
           <div class="specs-header">
             <h4>{{ choosedFoods.name }}</h4>
-            <i class="iconfont icon-delete"></i>
+            <i class="iconfont icon-delete" @click="showChooseList"></i>
           </div>
           <div class="specs-details">
             <h5 class="specs-details-title">{{ choosedFoods.specifications[0].name }}</h5>
@@ -185,7 +213,7 @@
                 v-for="(item, index) in choosedFoods.specifications[0].values"
                 :key="index"
                 :class="{ 'specs-active': index === specsIndex }"
-                @click="chooseSpecs(itemIndex)"
+                @click="chooseSpecs(index)"
               >{{ item }}</li>
             </ul>
           </div>
@@ -212,6 +240,11 @@
         </div>
       </transition>
     </div>
+
+    <!-- 规格无法删除提示框 -->
+    <transition name="fade">
+      <p class="not-delete-cart" v-if="showDeleteTip">多规格商品只能去购物车删除哦</p>
+    </transition>
   </div>
 </template>
 <script>
@@ -250,6 +283,10 @@ export default {
       ratingScoresData: {}, // ~ 商铺评价分数
       ratingTags: [], // ~ 商铺评价分类
       windowHeight: 0, // ~ 屏幕高度（为滚动插件做初始话准备）
+      totalPrice: 0, // ~ 购物车总价格
+      cartFoodList: [], // ~ 购物车商品列表
+      showCartList: false, // ~ 显示购物车列表
+      receiveInCart: false, // ~ 购物小圆点是否到达指定位置
       imgBaseUrl: '//elm.cangdu.org/img/' // ~ 图片基础
     }
   },
@@ -358,6 +395,10 @@ export default {
     addSpecs (categoryId, itemId, foodId, name, price, specs, packingFee, skuId, stock) {
       this.ADD_CAR({ shopId: this.shopId, categoryId, itemId, foodId, name, price, specs, packingFee, skuId, stock })
       this.showChooseList()
+    },
+    // ~ 切换购物车显示
+    toggleCartShow () {
+      this.showCartList = this.cartFoodList.length ? !this.showCartList : true
     }
   },
   watch: {
@@ -374,6 +415,22 @@ export default {
     ...mapState(['latitude', 'longitude', 'cartList']),
     shopCart () {
       return { ...this.cartList[this.shopId] }
+    },
+    // ~ 购物车商品数量
+    totalNum () {
+      let num = 0
+      this.cartFoodList.forEach(item => {
+        num += item.num
+      })
+      return num
+    },
+    // ~ 配送费计算
+    deliveryFee () {
+      return this.shopDetails ? this.shopDetails.float_delivery_fee : null
+    },
+    // ~ 还差多少元起送，为负时希纳是去结算按钮
+    minimumOrderAmount () {
+      return this.shopDetails ? this.shopDetails.float_minimum_order_amount - this.totalPrice : null
     }
   },
   components: {
@@ -616,8 +673,11 @@ export default {
     bottom: 0;
     left: 0;
     right: 0;
+    .dp(f);
+    .f-d(c);
+    .j-c(sb);
     .mg(auto);
-    .wh(70%, 30%);
+    .wh(70%, 27%);
     .bg-c(#fff);
     .bdr(9px);
     .z(999999999);
@@ -627,6 +687,8 @@ export default {
       .pd(10px 12px);
       h4 {
         .w(33.33%);
+        .txt-a(c);
+        .ft-w(400);
       }
       .iconfont {
         .dp(f);
@@ -635,7 +697,74 @@ export default {
         .w(33.33%);
       }
     }
+    .specs-details {
+      .pd(10px 12px);
+      h5 {
+        .pd(b, 10px);
+        .ft-w(400);
+        .ft-s(15px);
+        .c(#666);
+      }
+      ul {
+        .dp(f);
+        li {
+          .pd(5px 12px);
+          .mg(r, 10px);
+          .bd(1px solid #ddd);
+          .bdr(5px);
+          .ft-s(13 px);
+          touch-action: pan-y;
+          &.specs-active {
+            border-color: #3199e8;
+            .c(#3199e8);
+          }
+        }
+      }
+    }
+    .specs-footer {
+      .dp(f);
+      .j-c(sb);
+      .a-i(c);
+      .pd(10px 12px);
+      .bg-c(#f9f9f9);
+      border-bottom-right-radius: 9px;
+      border-bottom-left-radius: 9px;
+      .specs-footer-price {
+        .c(#ff6000);
+        & span:nth-of-type(1) {
+          .ft-s(12px);
+        }
+        & span:nth-of-type(2) {
+          .mg(l, -5px);
+          .ft-w(600);
+        }
+      }
+      .specs-footer-addcart {
+        .pd(4px 8px);
+        .ft-s(13px);
+        .bdr(4px);
+        .c(#fff);
+        .bg-c(#3199e8);
+      }
+    }
   }
+}
+
+.not-delete-cart {
+  .ps(fx);
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  .flex-hv();
+  .z(9999999999);
+  .wh(60%, 5%);
+  .mg(auto);
+  .txt-a(c);
+  .ft-s(13px);
+  .bdr(10px);
+  .c(#fff);
+  .bg-c(rgba(0, 0, 0, .8));
 }
 
 .show-animation-picture {
