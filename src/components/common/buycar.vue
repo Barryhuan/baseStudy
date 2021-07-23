@@ -64,7 +64,7 @@ export default {
       let elLeft = event.target.getBoundingClientRect().left
       let elBottom = event.target.getBoundingClientRect().bottom
       this.showMoveDot.push(true)
-      this.$emit('showMoveDot', this.showMoveDot, elLeft, elBottom)
+      this.$emit('showMoveDotFun', this.showMoveDot, elLeft, elBottom)
     },
     // ~ 从购物车里移除商品
     removeOutCart (categoryId, itemId, foodId, name, price, specs, packingFee, skuId, stock) {

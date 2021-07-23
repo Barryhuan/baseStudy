@@ -82,6 +82,7 @@
                   @click="chooseMenu(index)"
                 >
                   <span>{{ item.name }}</span>
+                  <span class="buy-count" v-if="buyNum[index]&&item.type==1">{{ buyNum[index] }}</span>
                 </li>
               </ul>
             </div>
@@ -142,15 +143,39 @@
                         <span v-if="foodItem.specifications.length">起</span>
                       </div>
                       <buy-car
-                        :shopId="shopId"
-                        :foodItem="foodItem"
-                        @showChooseList="showChooseList"
-                        @showReduceTip="showReduceTip"
+                        :shopId = "shopId"
+                        :foodItem = "foodItem"
+                        @showChooseList = "showChooseList"
+                        @showReduceTip = "showReduceTip"
+                        @showMoveDotFun = "showMoveDotFun"
                       ></buy-car>
                     </div>
                   </div>
                 </li>
               </ul>
+            </div>
+          </div>
+          <!-- 购物车 -->
+          <div class="buycart-content">
+            <div class="buycart-count" @click="toggleCartShow">
+              <div
+                class="buycart-car"
+                :class="{
+                  'buycart-icon-active' : totalPrice,
+                  'move-icon': receiveInCart
+                }"
+                ref="buycartIcon">
+                <span class="buycar-length" v-if="totalNum">{{ totalNum }}</span>
+                <i class="iconfont icon-buycart"></i>
+              </div>
+              <div class="buycart-info">
+                <p class="buycart-price">￥ {{ totalPrice }}</p>
+                <p class="buycart-delivery">配送费￥{{ deliveryFee }}</p>
+              </div>
+            </div>
+            <div class="buycart-settlment" :class="{ 'goToPlay' : minimumOrderAmount <= 0 }">
+              <span v-if="minimumOrderAmount > 0 ">还差￥{{ minimumOrderAmount }}起送</span>
+              <router-link :to="{ path: '/confirmOrder', query: { geohash, shopId } }" class="enough-play" v-else>去结算</router-link>
             </div>
           </div>
         </div>
@@ -167,30 +192,6 @@
     <!-- 加载动画 -->
     <div class="animation-opacity show-animation-picture" v-if="shopLoading">
       <img src="@i/shop_back_svg.svg" alt="">
-    </div>
-
-    <!-- 购车车 -->
-    <div class="buycart-content">
-      <div class="buycart-count" @click="toggleCartShow">
-        <div
-          class="buycart-car"
-          :class="{
-            'buycart-icon-active' : totalPrice,
-            'move-icon': receiveInCart
-          }"
-          ref="buycartIcon">
-          <span class="buycar-length" v-if="totalNum">{{ totalNum }}</span>
-          <i class="iconfont icon-buycart"></i>
-        </div>
-        <div class="buycart-info">
-          <p class="buycart-price">￥ {{ totalPrice }}</p>
-          <p class="buycart-delivery">配送费￥{{ deliveryFee }}</p>
-        </div>
-      </div>
-      <div class="buycart-settlment" :class="{ 'goToPlay' : minimumOrderAmount <= 0 }">
-        <span class="not-price-play" v-if="minimumOrderAmount > 0 ">还差￥{{ minimumOrderAmount }}起送</span>
-        <router-link :to="{ path: '/confirmOrder', query: { geohash, shopId } }" v-else>去结算</router-link>
-      </div>
     </div>
 
     <!-- 购车车内容 -->
@@ -245,6 +246,18 @@
     <transition name="fade">
       <p class="not-delete-cart" v-if="showDeleteTip">多规格商品只能去购物车删除哦</p>
     </transition>
+
+    <!-- 小圆点调入购物车动画 -->
+    <transition
+      appear
+      @after-appear = "afterEnter"
+      @before-appear= "beforeEnter"
+      v-for="(item,index) in showMoveDot " :key="index"
+    >
+      <span class="in-cart-dot">
+        <i class="iconfont icon-add"></i>
+      </span>
+    </transition>
   </div>
 </template>
 <script>
@@ -287,6 +300,8 @@ export default {
       cartFoodList: [], // ~ 购物车商品列表
       showCartList: false, // ~ 显示购物车列表
       receiveInCart: false, // ~ 购物小圆点是否到达指定位置
+      buyNum: [], // ~ 左侧列表右上角购买商品数量
+      showMoveDot: [], // ~ 控制下落的小圆点显示隐藏
       imgBaseUrl: '//elm.cangdu.org/img/' // ~ 图片基础
     }
   },
@@ -399,6 +414,86 @@ export default {
     // ~ 切换购物车显示
     toggleCartShow () {
       this.showCartList = this.cartFoodList.length ? !this.showCartList : true
+    },
+    // ~ 初始化购物车商品数量，变化时重新获取购物车改变过的数据
+    initBuyCarCount () {
+      let newArr = []
+      let cartFoodCount = 0
+      this.totalPrice = 0
+      this.cartFoodList = []
+      this.shopMenuList.forEach((item, index) => {
+        if (this.shopCart && this.shopCart[item.foods[0].category_id]) {
+          let num = 0
+          Object.keys(this.shopCart[item.foods[0].category_id]).forEach(itemId => {
+            Object.keys(this.shopCart[item.foods[0].category_id][itemId]).forEach(foodId => {
+              let foodItem = this.shopCart[item.foods[0].category_id][itemId][foodId]
+              num += foodItem.num
+              if (item.type === 1) {
+                this.totalPrice += foodItem.num * foodItem.price
+                if (foodItem.num > 0) {
+                  this.cartFoodList[cartFoodCount] = {}
+                  this.cartFoodList[cartFoodCount].category_id = item.foods[0].category_id
+                  this.cartFoodList[cartFoodCount].item_id = itemId
+                  this.cartFoodList[cartFoodCount].food_id = foodId
+                  this.cartFoodList[cartFoodCount].num = foodItem.num
+                  this.cartFoodList[cartFoodCount].price = foodItem.price
+                  this.cartFoodList[cartFoodCount].name = foodItem.name
+                  this.cartFoodList[cartFoodCount].specs = foodItem.specs
+                  cartFoodCount++
+                }
+              }
+            })
+          })
+          newArr[index] = num
+        } else {
+          newArr[index] = 0
+        }
+      })
+      this.totalPrice = this.totalPrice.toFixed(2)
+      this.buyNum = [...newArr]
+    },
+    // ~ 监听圆点是否进入购物车
+    listenInCart () {
+      if (!this.receiveInCart) {
+        this.receiveInCart = !0
+        this.$refs.buycartIcon.addEventListener('animationend', () => {
+          this.receiveInCart = !1
+        })
+        this.$refs.buycartIcon.addEventListener('webkitAnimationEnd', () => {
+          this.receiveInCart = !1
+        })
+      }
+    },
+    // ~ 显示小球下落
+    showMoveDotFun (showMoveDot, elLeft, elBottom) {
+      this.showMoveDot = [...this.showMoveDot, ...showMoveDot]
+      this.elLeft = elLeft
+      this.elBottom = elBottom
+    },
+    // ~ 小球开始状态
+    beforeEnter (el) {
+      console.log(this.elBottom)
+      console.log(this.windowHeight)
+      console.log(this.elLeft)
+      el.style.transform = `translate(${this.elLeft - 18}px, ${37 + this.elBottom - this.windowHeight}px)`
+      console.log(this.elLeft - 30)
+      el.children[0].style.transform = `translate(0, ${37 + this.elBottom - this.windowHeight}px)`
+      el.children[0].style.opacity = 0
+    },
+    // ~ 小球下落状态
+    afterEnter (el) {
+      el.style.transform = `translate(0, 0)`
+      el.children[0].style.transform = `translate(0, 0)`
+      el.style.transition = 'transform 60s cubic-bezier(0.3, -0.25, 0.7, -0.15)'
+      el.children[0].style.transition = 'transform 60s linear'
+      this.showMoveDot = this.showMoveDot.map(item => false)
+      el.children[0].style.opacity = 1
+      el.children[0].addEventListener('transitionend', () => {
+        this.listenInCart()
+      })
+      el.children[0].addEventListener('webkitAnimationEnd', () => {
+        this.listenInCart()
+      })
     }
   },
   watch: {
@@ -407,12 +502,18 @@ export default {
       if (!value) {
         this.$nextTick(() => {
           this.getFoodHeight()
+          this.initBuyCarCount()
         })
       }
+    },
+    // ~ 检测商品信息变化则初始化
+    shopCart () {
+      this.initBuyCarCount()
     }
   },
   computed: {
     ...mapState(['latitude', 'longitude', 'cartList']),
+    // ~ 当前商店购物信息
     shopCart () {
       return { ...this.cartList[this.shopId] }
     },
@@ -428,7 +529,7 @@ export default {
     deliveryFee () {
       return this.shopDetails ? this.shopDetails.float_delivery_fee : null
     },
-    // ~ 还差多少元起送，为负时希纳是去结算按钮
+    // ~ 还差多少元起送，为负数时去结算按钮
     minimumOrderAmount () {
       return this.shopDetails ? this.shopDetails.float_minimum_order_amount - this.totalPrice : null
     }
@@ -440,6 +541,14 @@ export default {
 }
 </script>
 <style lang="less" scope>
+@keyframes scalecart{
+  0%   { transform: scale(1) }
+  25%  { transform: scale(.8) }
+  50%  { transform: scale(1.1) }
+  75%  { transform: scale(.9) }
+  100% { transform: scale(1) }
+}
+
 .shops-container {
   .dp(f);
   .f-d(c);
@@ -539,12 +648,27 @@ export default {
         .bg-c(#f2f2f2);
         overflow-y: auto;
         touch-action: pan-y;
+        &::-webkit-scrollbar {
+          .dp(n);
+        }
         .menu-left {
           .ps(rt);
           .pd(20px 12px);
           .ft-s(13px);
           .ft-w(600);
           .ellipsis();
+          .buy-count {
+            .ps(ab);
+            top: 8%;
+            right: 5%;
+            .z(999);
+            .pd(1px 5.3px);
+            .ft-s(12px);
+            .c(#fff);
+            .bdr(10px);
+            .bg-c(#ff461d);
+            .tranf(scale(.8));
+          }
           &::after {
             content: '';
             .ps(ab);
@@ -570,6 +694,9 @@ export default {
         .w(75%);
         overflow-y: auto;
         touch-action: pan-y;
+        &::-webkit-scrollbar {
+          .dp(n);
+        }
         .menu-right {
           .menu-right-title {
             .dp(f);
@@ -651,6 +778,91 @@ export default {
           & .menu-right-list:nth-last-of-type(1) {
             .bd(r, 1px solid transparent);
           }
+        }
+      }
+    }
+    .buycart-content {
+      .dp(f);
+      .j-c(sb);
+      .a-i(c);
+      .ps(ab);
+      bottom: 0;
+      .wh(100%, 47px);
+      .z(9999);
+      .c(#fff);
+      .bg-c(#3d3d3f);
+      .buycart-count {
+        .dp(f);
+        .j-c(c);
+        .ps(rt);
+        .h(100%);
+        .f-g(3);
+        .buycart-car {
+          .dp(f);
+          .a-i(c);
+          .j-c(c);
+          .ps(ab);
+          top: -50%;
+          left: 6%;
+          .wh(55px, 55px);
+          .pd(8px);
+          .tranf(translateY(8%));
+          .bdr(50%);
+          .bg-c(#444444);
+          .buycar-length {
+            .ps(ab);
+            top: 0;
+            right: 0;
+            .pd(4px);
+            .ft-s(12px);
+            .tranf(scale(.75));
+            .bg-c(red);
+            .bdr(50%);
+            transform-origin: top;
+          }
+          .icon-buycart {
+            .ft-s(20px);
+            .bg-c(#3190e8);
+            .bdr(50%);
+            &::after {
+              content: '';
+              .dp(f);
+              .wh(30px, 30px);
+              .pd(6px);
+            }
+            &::before {
+              .ps(ab);
+              top: 50%;
+              left: 50%;
+              .tranf(translate(-50%, -50%));
+            }
+          }
+          &.move-icon {
+            animation: scalecart .5s ease-in-out;
+          }
+        }
+        .buycart-info {
+          .dp(f);
+          .f-d(c);
+          .j-c(se);
+          .buycart-price {
+            .ft-w(600);
+          }
+          .buycart-delivery {
+            .ft-s(13px);
+          }
+        }
+      }
+      .buycart-settlment {
+        .flex-hv();
+        .f-g(1);
+        .h(100%);
+        .ft-w(600);
+        .bg-c(#535356);
+        .enough-play {
+          .flex-hv();
+          .wh(100%, 100%);
+          .bg-c(#4cd964);
         }
       }
     }
@@ -765,6 +977,17 @@ export default {
   .bdr(10px);
   .c(#fff);
   .bg-c(rgba(0, 0, 0, .8));
+}
+
+.in-cart-dot {
+  .ps(fx);
+  bottom: 30px;
+  left: 35px;
+  .z(99999999999999);
+  .iconfont {
+    .ft-s(18px);
+    .c(#3190e8;);
+  }
 }
 
 .show-animation-picture {
